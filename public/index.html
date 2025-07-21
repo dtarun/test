@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innov8 - Goodreads for Ideas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        [x-cloak] { display: none !important; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .card-hover { transition: all 0.3s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="bg-gray-50" x-data="innov8App()" x-init="init()">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-lightbulb text-2xl text-purple-600 mr-2"></i>
+                        <span class="text-2xl font-bold text-gray-900">Innov8</span>
+                        <span class="text-sm text-gray-500 ml-2">Goodreads for Ideas</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <template x-if="!user">
+                        <div class="space-x-2">
+                            <button @click="showLogin = true" class="text-gray-700 hover:text-purple-600 px-3 py-2 rounded-md text-sm font-medium">
+                                Login
+                            </button>
+                            <button @click="showRegister = true" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+                                Sign Up
+                            </button>
+                        </div>
+                    </template>
+                    
+                    <template x-if="user">
+                        <div class="flex items-center space-x-4">
+                            <button @click="showNewIdea = true" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+                                <i class="fas fa-plus mr-2"></i>
+                                New Idea
+                            </button>
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" class="flex items-center text-gray-700 hover:text-purple-600">
+                                    <i class="fas fa-user-circle text-2xl"></i>
+                                    <span class="ml-2" x-text="user?.name"></span>
+                                </button>
+                                <div x-show="open" @click.away="open = false" x-cloak class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50">
+                                    <a href="#" @click="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="gradient-bg text-white py-16" x-show="!user" x-cloak>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl font-bold mb-4">Turn Ideas into Innovation</h1>
+            <p class="text-xl mb-8 opacity-90">Like Goodreads for books, but for your brilliant ideas. Capture, share, validate, and bring ideas to life.</p>
+            <div class="space-x-4">
+                <button @click="showRegister = true" class="bg-white text-purple-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition">
+                    Start Innovating
+                </button>
+                <button @click="showLogin = true" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-purple-600 transition">
+                    Login
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Filters -->
+        <div class="mb-8 flex flex-wrap gap-4 items-center" x-show="user">
+            <div class="flex items-center space-x-2">
+                <label class="text-sm font-medium text-gray-700">Category:</label>
+                <select x-model="filters.category" @change="loadIdeas()" class="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                    <option value="">All Categories</option>
+                    <option value="mobile-app">Mobile App</option>
+                    <option value="web-app">Web App</option>
+                    <option value="ai-ml">AI/ML</option>
+                    <option value="hardware">Hardware</option>
+                    <option value="service">Service</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <label class="text-sm font-medium text-gray-700">Status:</label>
+                <select x-model="filters.status" @change="loadIdeas()" class="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                    <option value="">All Status</option>
+                    <option value="draft">Draft</option>
+                    <option value="feedback">Getting Feedback</option>
+                    <option value="validated">AI Validated</option>
+                    <option value="prototype">Prototype Ready</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 max-w-md">
+                <input 
+                    type="text" 
+                    x-model="filters.search" 
+                    @input.debounce.500ms="loadIdeas()"
+                    placeholder="Search ideas..." 
+                    class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                >
+            </div>
+        </div>
+
+        <!-- Ideas Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="user">
+            <template x-for="idea in ideas" :key="idea.id">
+                <div class="bg-white rounded-lg shadow-md p-6 card-hover cursor-pointer" @click="selectIdea(idea)">
+                    <div class="flex items-start justify-between mb-4">
+                        <div class="flex-1">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2" x-text="idea.title"></h3>
+                            <p class="text-gray-600 text-sm mb-3 line-clamp-3" x-text="idea.description"></p>
+                        </div>
+                        <span class="px-2 py-1 text-xs rounded-full" 
+                              :class="{
+                                'bg-gray-100 text-gray-800': idea.status === 'draft',
+                                'bg-blue-100 text-blue-800': idea.status === 'feedback',
+                                'bg-green-100 text-green-800': idea.status === 'validated',
+                                'bg-purple-100 text-purple-800': idea.status === 'prototype'
+                              }"
+                              x-text="idea.status">
+                        </span>
+                    </div>
+                    
+                    <div class="flex items-center justify-between text-sm text-gray-500">
+                        <div class="flex items-center space-x-4">
+                            <span class="flex items-center">
+                                <i class="fas fa-heart mr-1"></i>
+                                <span x-text="idea.likes_count || 0"></span>
+                            </span>
+                            <span class="flex items-center">
+                                <i class="fas fa-comment mr-1"></i>
+                                <span x-text="idea.comments_count || 0"></span>
+                            </span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded" x-text="idea.category"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 flex items-center">
+                        <div class="flex items-center text-sm text-gray-500">
+                            <i class="fas fa-user-circle mr-2"></i>
+                            <span x-text="idea.author_name"></span>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+
+        <!-- Empty State -->
+        <div x-show="user && ideas.length === 0" class="text-center py-12">
+            <i class="fas fa-lightbulb text-6xl text-gray-300 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No ideas yet</h3>
+            <p class="text-gray-600 mb-6">Be the first to share a brilliant idea!</p>
+            <button @click="showNewIdea = true" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-lg font-semibold">
+                <i class="fas fa-plus mr-2"></i>
+                Create Your First Idea
+            </button>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div x-show="showLogin" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showLogin = false">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6 text-center">Welcome Back</h2>
+            <form @submit.prevent="login()">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" x-model="loginForm.email" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" x-model="loginForm.password" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <button type="submit" :disabled="loading" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-md font-semibold disabled:opacity-50">
+                    <span x-show="!loading">Login</span>
+                    <span x-show="loading">Logging in...</span>
+                </button>
+            </form>
+            <p class="text-center mt-4 text-sm text-gray-600">
+                Don't have an account? 
+                <button @click="showLogin = false; showRegister = true" class="text-purple-600 hover:underline">Sign up</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div x-show="showRegister" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showRegister = false">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6 text-center">Join Innov8</h2>
+            <form @submit.prevent="register()">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Name</label>
+                    <input type="text" x-model="registerForm.name" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input type="email" x-model="registerForm.email" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" x-model="registerForm.password" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                </div>
+                <button type="submit" :disabled="loading" class="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 rounded-md font-semibold disabled:opacity-50">
+                    <span x-show="!loading">Create Account</span>
+                    <span x-show="loading">Creating...</span>
+                </button>
+            </form>
+            <p class="text-center mt-4 text-sm text-gray-600">
+                Already have an account? 
+                <button @click="showRegister = false; showLogin = true" class="text-purple-600 hover:underline">Login</button>
+            </p>
+        </div>
+    </div>
+
+    <!-- New Idea Modal -->
+    <div x-show="showNewIdea" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showNewIdea = false">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold mb-6">Share Your Idea</h2>
+            <form @submit.prevent="createIdea()">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Title</label>
+                    <input type="text" x-model="ideaForm.title" required class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="What's your big idea?">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Description</label>
+                    <textarea x-model="ideaForm.description" required rows="4" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="Describe your idea in detail..."></textarea>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                    <select x-model="ideaForm.category" required class="w-full border border-gray-300 rounded-md px-3 py-2">
+                        <option value="">Select a category</option>
+                        <option value="mobile-app">Mobile App</option>
+                        <option value="web-app">Web App</option>
+                        <option value="ai-ml">AI/ML</option>
+                        <option value="hardware">Hardware</option>
+                        <option value="service">Service</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tags (comma separated)</label>
+                    <input type="text" x-model="ideaForm.tags" class="w-full border border-gray-300 rounded-md px-3 py-2" placeholder="innovation, startup, tech">
+                </div>
+                <div class="flex justify-end space-x-4">
+                    <button type="button" @click="showNewIdea = false" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="loading" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-md font-semibold disabled:opacity-50">
+                        <span x-show="!loading">Share Idea</span>
+                        <span x-show="loading">Sharing...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Idea Detail Modal -->
+    <div x-show="showIdeaDetail" x-cloak class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" @click.self="showIdeaDetail = false">
+        <div class="bg-white rounded-lg p-8 max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+            <template x-if="selectedIdea">
+                <div>
+                    <div class="flex justify-between items-start mb-6">
+                        <div class="flex-1">
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2" x-text="selectedIdea.title"></h2>
+                            <div class="flex items-center space-x-4 text-sm text-gray-500 mb-4">
+                                <span class="flex items-center">
+                                    <i class="fas fa-user-circle mr-2"></i>
+                                    <span x-text="selectedIdea.author_name"></span>
+                                </span>
+                                <span class="flex items-center">
+                                    <i class="fas fa-calendar mr-2"></i>
+                                    <span x-text="formatDate(selectedIdea.created_at)"></span>
+                                </span>
+                                <span class="px-2 py-1 text-xs rounded-full"
+                                      :class="getStatusColor(selectedIdea.status)"
+                                      x-text="selectedIdea.status">
+                                </span>
+                            </div>
+                        </div>
+                        <button @click="showIdeaDetail = false" class="text-gray-400 hover:text-gray-600">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-lg font-semibold mb-3">Description</h3>
+                        <p class="text-gray-700 leading-relaxed" x-text="selectedIdea.description"></p>
+                    </div>
+
+                    <div class="flex items-center justify-between mb-6 p-4 bg-gray-50 rounded-lg">
+                        <div class="flex items-center space-x-6">
+                            <button @click="likeIdea(selectedIdea)" class="flex items-center space-x-2 text-gray-600 hover:text-red-500">
+                                <i class="fas fa-heart"></i>
+                                <span x-text="selectedIdea.likes_count || 0"></span>
+                            </button>
+                            <span class="flex items-center space-x-2 text-gray-600">
+                                <i class="fas fa-comment"></i>
+                                <span x-text="selectedIdea.comments_count || 0"></span>
+                            </span>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button @click="validateIdea(selectedIdea)" :disabled="loading" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-50">
+                                <i class="fas fa-robot mr-2"></i>
+                                <span x-show="!loading">AI Validate</span>
+                                <span x-show="loading">Validating...</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- AI Validation Results -->
+                    <div x-show="selectedIdea.validation" class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h3 class="text-lg font-semibold mb-3 text-blue-900">
+                            <i class="fas fa-robot mr-2"></i>
+                            AI Market Validation
+                        </h3>
+                        <template x-if="selectedIdea.validation">
+                            <div>
+                                <div class="mb-4">
+                                    <h4 class="font-medium text-blue-800 mb-2">Market Analysis</h4>
+                                    <p class="text-blue-700 text-sm" x-text="selectedIdea.validation.market_analysis"></p>
+                                </div>
+                                <div class="mb-4">
+                                    <h4 class="font-medium text-blue-800 mb-2">Feasibility Score</h4>
+                                    <div class="flex items-center">
+                                        <div class="w-full bg-blue-200 rounded-full h-2 mr-3">
+                                            <div class="bg-blue-600 h-2 rounded-full" :style="`width: ${selectedIdea.validation.feasibility_score}%`"></div>
+                                        </div>
+                                        <span class="text-blue-800 font-semibold" x-text="`${selectedIdea.validation.feasibility_score}%`"></span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-blue-800 mb-2">Recommendation</h4>
+                                    <p class="text-blue-700 text-sm" x-text="selectedIdea.validation.recommendation"></p>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Comments Section -->
+                    <div>
+                        <h3 class="text-lg font-semibold mb-4">Comments & Feedback</h3>
+
+                        <!-- Add Comment Form -->
+                        <template x-if="user">
+                            <form @submit.prevent="addComment(selectedIdea)" class="mb-6 p-4 bg-gray-50 rounded-lg">
+                                <textarea x-model="commentForm.content" rows="3" placeholder="Share your thoughts..." class="w-full border border-gray-300 rounded-md px-3 py-2 mb-3"></textarea>
+                                <div class="flex justify-between items-center">
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-sm text-gray-600">Rating:</label>
+                                        <select x-model="commentForm.rating" class="border border-gray-300 rounded px-2 py-1 text-sm">
+                                            <option value="">No rating</option>
+                                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
+                                            <option value="4">⭐⭐⭐⭐ Good</option>
+                                            <option value="3">⭐⭐⭐ Average</option>
+                                            <option value="2">⭐⭐ Poor</option>
+                                            <option value="1">⭐ Very Poor</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" :disabled="!commentForm.content.trim()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-50">
+                                        Add Comment
+                                    </button>
+                                </div>
+                            </form>
+                        </template>
+
+                        <!-- Comments List -->
+                        <div class="space-y-4">
+                            <template x-for="comment in selectedIdea.comments || []" :key="comment.id">
+                                <div class="border border-gray-200 rounded-lg p-4">
+                                    <div class="flex justify-between items-start mb-2">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="font-medium text-gray-900" x-text="comment.author_name"></span>
+                                            <template x-if="comment.rating">
+                                                <div class="flex items-center">
+                                                    <template x-for="i in comment.rating">
+                                                        <i class="fas fa-star text-yellow-400 text-xs"></i>
+                                                    </template>
+                                                </div>
+                                            </template>
+                                        </div>
+                                        <span class="text-xs text-gray-500" x-text="formatDate(comment.created_at)"></span>
+                                    </div>
+                                    <p class="text-gray-700" x-text="comment.content"></p>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
