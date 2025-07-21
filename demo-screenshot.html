@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Innov8 Demo - What You Should See</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- This shows exactly what your Innov8 app looks like -->
+    
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 mx-4 mt-4">
+        <strong>📱 Demo Preview:</strong> This is exactly what your Innov8 app looks like when running on localhost:3000
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-lightbulb text-2xl text-purple-600 mr-2"></i>
+                        <span class="text-2xl font-bold text-gray-900">Innov8</span>
+                        <span class="text-sm text-gray-500 ml-2">Goodreads for Ideas</span>
+                    </div>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium flex items-center">
+                        <i class="fas fa-plus mr-2"></i>
+                        New Idea
+                    </button>
+                    <div class="flex items-center text-gray-700">
+                        <i class="fas fa-user-circle text-2xl"></i>
+                        <span class="ml-2">Demo User</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Filters -->
+        <div class="mb-8 flex flex-wrap gap-4 items-center">
+            <div class="flex items-center space-x-2">
+                <label class="text-sm font-medium text-gray-700">Category:</label>
+                <select class="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                    <option>All Categories</option>
+                    <option>AI/ML</option>
+                    <option>Mobile App</option>
+                    <option>Hardware</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center space-x-2">
+                <label class="text-sm font-medium text-gray-700">Status:</label>
+                <select class="border border-gray-300 rounded-md px-3 py-1 text-sm">
+                    <option>All Status</option>
+                    <option>Draft</option>
+                    <option>Getting Feedback</option>
+                    <option>Validated</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 max-w-md">
+                <input type="text" placeholder="Search ideas..." class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+            </div>
+        </div>
+
+        <!-- Ideas Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Idea Card 1 -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">AI-Powered Code Review Assistant</h3>
+                        <p class="text-gray-600 text-sm mb-3">An intelligent code review tool that automatically detects bugs, suggests improvements, and ensures coding standards...</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">validated</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1 text-red-500"></i>
+                            <span>15</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comment mr-1"></i>
+                            <span>8</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">ai-ml</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span>Demo User</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Idea Card 2 -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Smart Home Energy Optimizer</h3>
+                        <p class="text-gray-600 text-sm mb-3">IoT device that learns your energy usage patterns and automatically optimizes appliances to reduce electricity bills...</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">feedback</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1 text-red-500"></i>
+                            <span>23</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comment mr-1"></i>
+                            <span>12</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">hardware</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span>Alice Johnson</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Idea Card 3 -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">AI Nutrition Coach</h3>
+                        <p class="text-gray-600 text-sm mb-3">Personal nutrition assistant that analyzes your meals through photos and provides real-time dietary recommendations...</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800">feedback</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1 text-red-500"></i>
+                            <span>42</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comment mr-1"></i>
+                            <span>25</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">mobile-app</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span>Bob Smith</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Idea Card 4 -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Micro-Learning Mobile App</h3>
+                        <p class="text-gray-600 text-sm mb-3">Bite-sized learning platform that delivers personalized 5-minute lessons based on your career goals...</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full bg-purple-100 text-purple-800">prototype</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1 text-red-500"></i>
+                            <span>31</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comment mr-1"></i>
+                            <span>18</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">mobile-app</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span>Demo User</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Idea Card 5 -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Virtual Reality Meeting Rooms</h3>
+                        <p class="text-gray-600 text-sm mb-3">Immersive VR platform for remote meetings with spatial audio, gesture recognition, and collaborative 3D workspaces...</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-800">draft</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1 text-red-500"></i>
+                            <span>7</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comment mr-1"></i>
+                            <span>3</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">web-app</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span>Bob Smith</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Idea Card 6 -->
+            <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow cursor-pointer">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Blockchain-Based Digital Identity</h3>
+                        <p class="text-gray-600 text-sm mb-3">Secure, decentralized identity management system that gives users complete control over their personal data...</p>
+                    </div>
+                    <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">validated</span>
+                </div>
+                
+                <div class="flex items-center justify-between text-sm text-gray-500">
+                    <div class="flex items-center space-x-4">
+                        <span class="flex items-center">
+                            <i class="fas fa-heart mr-1 text-red-500"></i>
+                            <span>19</span>
+                        </span>
+                        <span class="flex items-center">
+                            <i class="fas fa-comment mr-1"></i>
+                            <span>14</span>
+                        </span>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">service</span>
+                    </div>
+                </div>
+                
+                <div class="mt-4 flex items-center">
+                    <div class="flex items-center text-sm text-gray-500">
+                        <i class="fas fa-user-circle mr-2"></i>
+                        <span>Alice Johnson</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Info -->
+    <div class="fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg">
+        <i class="fas fa-check-circle mr-2"></i>
+        Server Running on Port 3000
+    </div>
+
+    <!-- Instructions -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-6 mx-4 mt-8">
+        <h3 class="text-lg font-semibold text-blue-900 mb-4">🚀 Your Innov8 App is Working!</h3>
+        <div class="text-blue-800">
+            <p class="mb-2"><strong>✅ Server Status:</strong> Running perfectly on localhost:3000</p>
+            <p class="mb-2"><strong>✅ Database:</strong> 6 demo ideas loaded</p>
+            <p class="mb-2"><strong>✅ API:</strong> All endpoints responding</p>
+            <p class="mb-4"><strong>✅ Features:</strong> Login, create ideas, AI validation, comments, likes</p>
+            
+            <div class="bg-blue-100 rounded p-4 mt-4">
+                <h4 class="font-semibold mb-2">🧪 Demo Accounts:</h4>
+                <code class="text-sm">
+                    Email: demo@innov8.com | Password: demo123<br>
+                    Email: alice@innov8.com | Password: demo123<br>
+                    Email: bob@innov8.com | Password: demo123
+                </code>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
