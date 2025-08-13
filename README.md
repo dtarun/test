@@ -14,17 +14,31 @@ Innov8 is an innovation platform that helps teams capture, share, validate, and 
 - **⭐ Social Features** - Like, comment, and rate ideas
 - **📊 Status Tracking** - Track ideas from draft → feedback → validated → prototype
 
-## 🚀 Quick Start
+## 🚀 Getting Started
+
+Follow these instructions to get the project set up and running on your local machine.
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+
+### Installation & Running
+
+1.  **Install dependencies:** From the root of the project directory, run:
+    ```bash
+    npm install
+    ```
+
+2.  **Run the application:**
+    ```bash
+    npm start
+    ```
+
+3.  **Access the app:** 🌐 Open your browser to **http://localhost:3000**
 
 ### 🧪 Demo Accounts
-```
-Email: demo@innov8.com | Password: demo123
-Email: alice@innov8.com | Password: demo123
-Email: bob@innov8.com | Password: demo123
-```
+Use the following accounts to test the application:
 
-### Access the App
-**🌐 Open: http://localhost:3000**
 
 ## 🎯 Product Vision
 
@@ -35,6 +49,14 @@ Email: bob@innov8.com | Password: demo123
 - ✅ Mock AI validation
 - ✅ Search and filtering
 - ✅ Responsive design
+
+### Changelog
+
+#### v2.0.0 (Current)
+- **Backend Refactor**: Migrated all API endpoints from callbacks to `async/await` for improved readability and error handling.
+- **Database Module**: Introduced a dedicated `db.js` module to centralize and promisify database interactions.
+- **Frontend State Management**: Implemented a state synchronization utility to ensure UI consistency.
+- **API Enhancements**: Added `/api/auth/verify` endpoint and fixed bugs in the "like" functionality.
 
 ### Future Vision
 - 🚀 **AI Agent Prototyping** - Agents build working prototypes
