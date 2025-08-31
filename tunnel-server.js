@@ -1,10 +1,8 @@
 const app = require('./app-setup');
 const PORT = process.env.PORT || 8080;
 
-// Trust proxy for dev tunnels
 app.set('trust proxy', true);
 
-// Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Innov8 Dev Tunnels Server running on port ${PORT}`);
   console.log(`📱 Local access: http://localhost:${PORT}`);

@@ -227,6 +227,11 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
+// Verify token
+app.get('/api/auth/verify', authenticateToken, (req, res) => {
+  res.json({ message: 'Token is valid', user: req.user });
+});
+
 // Get all ideas (public feed)
 app.get('/api/ideas', async (req, res) => {
   const { category, status, search, limit = 20, offset = 0 } = req.query;
