@@ -148,6 +148,12 @@
                                 <i class="fas fa-comment mr-1"></i>
                                 <span x-text="idea.comments_count || 0"></span>
                             </span>
+							  <template x-if="idea.average_rating > 0">
+                                <span class="flex items-center">
+                                    <i class="fas fa-star mr-1"></i>
+                                    <span x-text="getAverageRating(idea)"></span>
+                                </span>
+                            </template>
                         </div>
                         <div class="flex items-center">
                             <span class="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded" x-text="idea.category"></span>
@@ -315,6 +321,10 @@
                                 <i class="fas fa-comment"></i>
                                 <span x-text="selectedIdea.comments_count || 0"></span>
                             </span>
+                            <span class="flex items-center space-x-2 text-gray-600">
+                                <i class="fas fa-star"></i>
+                                <span x-text="selectedIdea.average_rating ? selectedIdea.average_rating.toFixed(1) : 'N/A'"></span>
+                            </span>
                         </div>
                         <div class="flex space-x-2">
                             <button @click="validateIdea(selectedIdea)" :disabled="loading" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-50">
@@ -333,22 +343,47 @@
                         </h3>
                         <template x-if="selectedIdea.validation">
                             <div>
-                                <div class="mb-4">
-                                    <h4 class="font-medium text-blue-800 mb-2">Market Analysis</h4>
-                                    <p class="text-blue-700 text-sm" x-text="selectedIdea.validation.market_analysis"></p>
-                                </div>
-                                <div class="mb-4">
-                                    <h4 class="font-medium text-blue-800 mb-2">Feasibility Score</h4>
-                                    <div class="flex items-center">
-                                        <div class="w-full bg-blue-200 rounded-full h-2 mr-3">
-                                            <div class="bg-blue-600 h-2 rounded-full" :style="`width: ${selectedIdea.validation.feasibility_score}%`"></div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Left Column -->
+                                    <div>
+                                        <div class="mb-4">
+                                            <h4 class="font-medium text-blue-800 mb-1">Market Analysis</h4>
+                                            <p class="text-blue-700 text-sm" x-text="selectedIdea.validation.market_analysis"></p>
                                         </div>
-                                        <span class="text-blue-800 font-semibold" x-text="`${selectedIdea.validation.feasibility_score}%`"></span>
+                                        <div class="mb-4">
+                                            <h4 class="font-medium text-blue-800 mb-1">Technical Feasibility</h4>
+                                            <p class="text-blue-700 text-sm" x-text="selectedIdea.validation.technical_feasibility"></p>
+                                        </div>
+                                        <div class="mb-4">
+                                            <h4 class="font-medium text-blue-800 mb-1">Potential Competitors</h4>
+                                            <ul class="list-disc list-inside text-blue-700 text-sm space-y-1">
+                                                <template x-for="comp in selectedIdea.validation.competitor_analysis">
+                                                    <li x-text="comp"></li>
+                                                </template>
+                                            </ul>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-medium text-blue-800 mb-1">Recommendations</h4>
+                                            <ul class="list-disc list-inside text-blue-700 text-sm space-y-1">
+                                                <template x-for="rec in selectedIdea.validation.recommendations">
+                                                    <li x-text="rec"></li>
+                                                </template>
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
-                                <div>
-                                    <h4 class="font-medium text-blue-800 mb-2">Recommendation</h4>
-                                    <p class="text-blue-700 text-sm" x-text="selectedIdea.validation.recommendation"></p>
+                                    <!-- Right Column - Scores -->
+                                    <div class="space-y-3">
+                                        <h4 class="font-medium text-blue-800 mb-1">Overall Score</h4>
+                                        <div class="flex items-center">
+                                            <div class="w-full bg-blue-200 rounded-full h-4 mr-3">
+                                                <div class="bg-blue-600 h-4 rounded-full text-white text-xs flex items-center justify-center" :style="`width: ${selectedIdea.validation.overall_score}%`" x-text="`${selectedIdea.validation.overall_score}%`"></div>
+                                            </div>
+                                        </div>
+                                        <h4 class="font-medium text-blue-800 mb-1 pt-2">Score Breakdown</h4>
+                                        <p class="text-sm text-blue-700">Desirability: <span class="font-semibold" x-text="`${selectedIdea.validation.desirability_score}%`"></span></p>
+                                        <p class="text-sm text-blue-700">Validity: <span class="font-semibold" x-text="`${selectedIdea.validation.validity_score}%`"></span></p>
+                                        <p class="text-sm text-blue-700">Feasibility: <span class="font-semibold" x-text="`${selectedIdea.validation.feasibility_score}%`"></span></p>
+                                    </div>
                                 </div>
                             </div>
                         </template>
@@ -358,22 +393,26 @@
                     <div>
                         <h3 class="text-lg font-semibold mb-4">Comments & Feedback</h3>
 
+                        <!-- Rate Idea Component -->
+                        <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+                            <h4 class="text-md font-semibold mb-2">Rate this idea</h4>
+                            <div class="flex items-center space-x-1" x-data="{ hoverRating: 0, currentRating: 0 }">
+                                <template x-for="star in 5">
+                                    <i class="fas fa-star text-2xl cursor-pointer"
+                                       :class="star <= (hoverRating || currentRating) ? 'text-yellow-400' : 'text-gray-300'"
+                                       @mouseenter="hoverRating = star"
+                                       @mouseleave="hoverRating = 0"
+                                       @click="currentRating = star; rateIdea(selectedIdea, star)">
+                                    </i>
+                                </template>
+                            </div>
+                        </div>
+
                         <!-- Add Comment Form -->
                         <template x-if="user">
                             <form @submit.prevent="addComment(selectedIdea)" class="mb-6 p-4 bg-gray-50 rounded-lg">
                                 <textarea x-model="commentForm.content" rows="3" placeholder="Share your thoughts..." class="w-full border border-gray-300 rounded-md px-3 py-2 mb-3"></textarea>
-                                <div class="flex justify-between items-center">
-                                    <div class="flex items-center space-x-2">
-                                        <label class="text-sm text-gray-600">Rating:</label>
-                                        <select x-model="commentForm.rating" class="border border-gray-300 rounded px-2 py-1 text-sm">
-                                            <option value="">No rating</option>
-                                            <option value="5">⭐⭐⭐⭐⭐ Excellent</option>
-                                            <option value="4">⭐⭐⭐⭐ Good</option>
-                                            <option value="3">⭐⭐⭐ Average</option>
-                                            <option value="2">⭐⭐ Poor</option>
-                                            <option value="1">⭐ Very Poor</option>
-                                        </select>
-                                    </div>
+                                <div class="flex justify-end">
                                     <button type="submit" :disabled="!commentForm.content.trim()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md text-sm font-semibold disabled:opacity-50">
                                         Add Comment
                                     </button>

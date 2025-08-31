@@ -36,6 +36,15 @@ function innov8App() {
             search: ''
         },
         
+		 getAverageRating(idea) {
+            if (!idea || typeof idea.average_rating === 'undefined') {
+                return 'N/A';
+            }
+            // The average is now pre-calculated on the backend
+            return idea.average_rating > 0 ? idea.average_rating.toFixed(1) : '0.0';
+        },
+
+		
         // Initialize app
         async init() {
             // Check for existing token
@@ -179,10 +188,19 @@ function innov8App() {
                 if (response.ok) {
                     this.showNewIdea = false;
                     this.ideaForm = { title: '', description: '', category: '', tags: '' };
-                    await this.loadIdeas();
+                    // Reset filters to ensure the new idea is visible
+                    this.filters = {
+                        category: '',
+                        status: '',
+                        search: ''
+                    };
+                    // No need to reload all ideas. Just add the new one to the top.
+                    // This is faster and avoids potential race conditions.
+                    this.ideas.unshift(data.idea);
                     this.showNotification('Idea shared successfully!', 'success');
                 } else {
                     this.showNotification(data.error || 'Failed to create idea', 'error');
+					 console.log(data.error)
                 }
             } catch (error) {
                 this.showNotification('Network error. Please try again.', 'error');
@@ -192,9 +210,15 @@ function innov8App() {
         },
         
         async selectIdea(idea) {
+            console.log('Attempting to select idea:', JSON.stringify(idea, null, 2));
             try {
+                const token = localStorage.getItem('innov8_token');
                 // Fetch detailed idea information
-                const response = await fetch(`/api/ideas/${idea.id}`);
+                const response = await fetch(`/api/ideas/${idea.id}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 const data = await response.json();
 
                 if (response.ok) {
@@ -228,6 +252,12 @@ function innov8App() {
                 if (response.ok) {
                     this.selectedIdea.validation = data.validation;
                     this.selectedIdea.status = 'validated';
+
+                    // Also update the status in the main ideas list to refresh the card
+                    const ideaInList = this.ideas.find(i => i.id === idea.id);
+                    if (ideaInList) {
+                        ideaInList.status = 'validated';
+                    }
                     this.showNotification('AI validation completed!', 'success');
                 } else {
                     this.showNotification(data.error || 'Validation failed', 'error');
@@ -236,6 +266,39 @@ function innov8App() {
                 this.showNotification('Network error during validation', 'error');
             } finally {
                 this.loading = false;
+            }
+        },
+
+        async rateIdea(idea, rating) {
+            try {
+                const token = localStorage.getItem('innov8_token');
+                const response = await fetch(`/api/ideas/${idea.id}/rate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ rating })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Update the selected idea's rating info
+                    this.selectedIdea.average_rating = data.average_rating;
+                    this.selectedIdea.ratings_count = data.ratings_count;
+
+                    // Also update the idea in the main list for UI reactivity
+                    const ideaInList = this.ideas.find(i => i.id === idea.id);
+                    if (ideaInList) {
+                        ideaInList.average_rating = data.average_rating;
+                    }
+                    this.showNotification('Your rating has been submitted!', 'success');
+                } else {
+                    this.showNotification(data.error || 'Failed to submit rating', 'error');
+                }
+            } catch (error) {
+                this.showNotification('Network error while rating.', 'error');
             }
         },
 
@@ -289,8 +352,7 @@ function innov8App() {
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        content: this.commentForm.content,
-                        rating: this.commentForm.rating ? parseInt(this.commentForm.rating) : null
+                        content: this.commentForm.content
                     })
                 });
 
@@ -306,6 +368,8 @@ function innov8App() {
                     const ideaInList = this.ideas.find(i => i.id === idea.id);
                     if (ideaInList) {
                         ideaInList.comments_count = this.selectedIdea.comments_count;
+                        // Re-fetch comments to update average rating display if needed
+                        ideaInList.comments = this.selectedIdea.comments;
                     }
 
                     // Reset form
