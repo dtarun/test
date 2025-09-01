@@ -1,0 +1,4 @@
+# This file tells Ansible which collections to install.
+---
+collections:
+  - community.general

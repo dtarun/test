@@ -74,4 +74,19 @@ function serialize(fn) {
   });
 }
 
-module.exports = { db, dbRun, dbGet, dbAll, serialize };
+/**
+ * Closes the database connection.
+ * @returns {Promise<void>}
+ */
+function dbClose() {
+  return new Promise((resolve, reject) => {
+    db.close((err) => {
+      if (err) {
+        return reject(err);
+      }
+      resolve();
+    });
+  });
+}
+
+module.exports = { db, dbRun, dbGet, dbAll, serialize, dbClose };
