@@ -1,0 +1,17 @@
+# This is an example inventory file.
+# Copy this to inventory.ini and fill in your actual values.
+# The inventory.ini file is ignored by Git to protect your secrets.
+
+[gcp_servers]
+innov8-gcp ansible_host=YOUR_GCP_IP_ADDRESS_HERE
+
+[aws_servers]
+# innov8-aws ansible_host=YOUR_AWS_IP_ADDRESS_HERE
+
+[all:vars]
+ansible_user=your_ssh_username
+ansible_ssh_private_key_file=~/.ssh/your_private_key_name
+
+# Project-specific variables
+project_dir=/home/your_ssh_username/innov8-project
+pm2_app_name=innov8-app

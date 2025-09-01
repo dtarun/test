@@ -49,8 +49,8 @@ function innov8App() {
                     });
                     
                     if (response.ok) {
-                        const userData = JSON.parse(localStorage.getItem('innov8_user'));
-                        this.user = userData;
+                        const data = await response.json();
+                        this.user = data.user;
                         await this.loadIdeas();
                     } else {
                         localStorage.removeItem('innov8_token');
@@ -61,6 +61,8 @@ function innov8App() {
                     localStorage.removeItem('innov8_token');
                     localStorage.removeItem('innov8_user');
                 }
+            } else {
+                await this.loadIdeas();
             }
         },
         
@@ -80,7 +82,6 @@ function innov8App() {
                 
                 if (response.ok) {
                     localStorage.setItem('innov8_token', data.token);
-                    localStorage.setItem('innov8_user', JSON.stringify(data.user));
                     this.user = data.user;
                     this.showLogin = false;
                     this.loginForm = { email: '', password: '' };
@@ -111,7 +112,6 @@ function innov8App() {
                 
                 if (response.ok) {
                     localStorage.setItem('innov8_token', data.token);
-                    localStorage.setItem('innov8_user', JSON.stringify(data.user));
                     this.user = data.user;
                     this.showRegister = false;
                     this.registerForm = { name: '', email: '', password: '' };
@@ -129,7 +129,6 @@ function innov8App() {
         
         logout() {
             localStorage.removeItem('innov8_token');
-            localStorage.removeItem('innov8_user');
             this.user = null;
             this.ideas = [];
             this.showNotification('Logged out successfully', 'success');
@@ -137,8 +136,7 @@ function innov8App() {
         
         // Ideas
         async loadIdeas() {
-            if (!this.user) return;
-            
+            this.loading = true;
             try {
                 const params = new URLSearchParams();
                 if (this.filters.category) params.append('category', this.filters.category);
@@ -155,6 +153,8 @@ function innov8App() {
                 }
             } catch (error) {
                 this.showNotification('Network error loading ideas', 'error');
+            } finally {
+                this.loading = false;
             }
         },
         
@@ -226,8 +226,10 @@ function innov8App() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    this.selectedIdea.validation = data.validation;
-                    this.selectedIdea.status = 'validated';
+                    this.updateIdeaInState(idea.id, {
+                        validation: data.validation,
+                        status: 'validated'
+                    });
                     this.showNotification('AI validation completed!', 'success');
                 } else {
                     this.showNotification(data.error || 'Validation failed', 'error');
@@ -252,17 +254,7 @@ function innov8App() {
                 const data = await response.json();
 
                 if (response.ok) {
-                    if (data.liked) {
-                        this.selectedIdea.likes_count = (this.selectedIdea.likes_count || 0) + 1;
-                    } else {
-                        this.selectedIdea.likes_count = Math.max(0, (this.selectedIdea.likes_count || 0) - 1);
-                    }
-
-                    // Update in ideas list too
-                    const ideaInList = this.ideas.find(i => i.id === idea.id);
-                    if (ideaInList) {
-                        ideaInList.likes_count = this.selectedIdea.likes_count;
-                    }
+                    this.updateIdeaInState(idea.id, { likes_count: data.liked ? (idea.likes_count || 0) + 1 : Math.max(0, (idea.likes_count || 0) - 1) });
                 } else {
                     this.showNotification(data.error || 'Failed to like idea', 'error');
                 }
@@ -300,13 +292,7 @@ function innov8App() {
                     // Add comment to the list
                     this.selectedIdea.comments = this.selectedIdea.comments || [];
                     this.selectedIdea.comments.unshift(data.comment);
-                    this.selectedIdea.comments_count = (this.selectedIdea.comments_count || 0) + 1;
-
-                    // Update in ideas list
-                    const ideaInList = this.ideas.find(i => i.id === idea.id);
-                    if (ideaInList) {
-                        ideaInList.comments_count = this.selectedIdea.comments_count;
-                    }
+                    this.updateIdeaInState(idea.id, { comments_count: (this.selectedIdea.comments_count || 0) + 1 });
 
                     // Reset form
                     this.commentForm = { content: '', rating: '' };
@@ -320,6 +306,18 @@ function innov8App() {
         },
         
         // Utility functions
+        updateIdeaInState(ideaId, updates) {
+            // Update in the main ideas list
+            const ideaInList = this.ideas.find(i => i.id === ideaId);
+            if (ideaInList) {
+                Object.assign(ideaInList, updates);
+            }
+            // Update in the selected idea detail view
+            if (this.selectedIdea && this.selectedIdea.id === ideaId) {
+                Object.assign(this.selectedIdea, updates);
+            }
+        },
+
         showNotification(message, type = 'info') {
             // Create notification element
             const notification = document.createElement('div');

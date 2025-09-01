@@ -1,0 +1,49 @@
+# This is a GitHub Actions workflow file that defines your CI/CD pipeline.
+# It will automatically build, test, and deploy your application to GCP.
+
+name: Build and Deploy to GCP
+
+# This workflow triggers on any push to the 'master' branch.
+# Change this to 'main' if that is your primary branch.
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  # --- The CI (Continuous Integration) Job ---
+  build:
+    name: Build and Test Application
+    runs-on: ubuntu-latest # Use a standard Linux runner
+
+    steps:
+      - name: Checkout code from repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js v18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm' # Cache dependencies for faster builds
+
+      - name: Install dependencies
+        # 'npm ci' is recommended for CI as it's faster and uses the package-lock.json
+        run: npm ci
+
+  # --- The CD (Continuous Deployment) Job ---
+  deploy:
+    name: Deploy to Production
+    needs: build # This job will only run if the 'build' job succeeds
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code from repository
+        uses: actions/checkout@v4
+
+      - name: Run Ansible Playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: deploy.yml
+          inventory: ${{ secrets.GCP_INVENTORY }}
+          vault_password: ${{ secrets.ANSIBLE_VAULT_PASSWORD }}
+          key: ${{ secrets.GCP_SSH_PRIVATE_KEY }}

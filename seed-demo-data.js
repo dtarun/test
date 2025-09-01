@@ -1,8 +1,6 @@
-const sqlite3 = require('sqlite3').verbose();
 const bcrypt = require('bcryptjs');
 const { v4: uuidv4 } = require('uuid');
-
-const db = new sqlite3.Database('./innov8.db');
+const { db, dbRun, serialize } = require('./db');
 
 async function seedDemoData() {
   console.log('🌱 Seeding demo data for Innov8...');
@@ -33,16 +31,10 @@ async function seedDemoData() {
     // Insert demo users
     for (const user of demoUsers) {
       const hashedPassword = await bcrypt.hash(user.password, 10);
-      await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT OR IGNORE INTO users (id, email, name, password_hash) VALUES (?, ?, ?, ?)',
-          [user.id, user.email, user.name, hashedPassword],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      await dbRun(
+        'INSERT OR IGNORE INTO users (id, email, name, password_hash) VALUES (?, ?, ?, ?)',
+        [user.id, user.email, user.name, hashedPassword]
+      );
     }
     
     // Demo ideas
@@ -117,16 +109,10 @@ async function seedDemoData() {
     
     // Insert demo ideas
     for (const idea of demoIdeas) {
-      await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT OR IGNORE INTO ideas (id, user_id, title, description, category, tags, status, likes_count, comments_count, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-          [idea.id, idea.user_id, idea.title, idea.description, idea.category, idea.tags, idea.status, idea.likes_count, idea.comments_count, 1],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      await dbRun(
+        'INSERT OR IGNORE INTO ideas (id, user_id, title, description, category, tags, status, likes_count, comments_count, is_public) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [idea.id, idea.user_id, idea.title, idea.description, idea.category, idea.tags, idea.status, idea.likes_count, idea.comments_count, 1]
+      );
     }
     
     // Add some demo comments
@@ -162,16 +148,10 @@ async function seedDemoData() {
     ];
     
     for (const comment of demoComments) {
-      await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT OR IGNORE INTO comments (id, idea_id, user_id, content, rating) VALUES (?, ?, ?, ?, ?)',
-          [comment.id, comment.idea_id, comment.user_id, comment.content, comment.rating],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      await dbRun(
+        'INSERT OR IGNORE INTO comments (id, idea_id, user_id, content, rating) VALUES (?, ?, ?, ?, ?)',
+        [comment.id, comment.idea_id, comment.user_id, comment.content, comment.rating]
+      );
     }
     
     // Add some AI validations
@@ -205,16 +185,10 @@ async function seedDemoData() {
     ];
     
     for (const validation of aiValidations) {
-      await new Promise((resolve, reject) => {
-        db.run(
-          'INSERT OR IGNORE INTO ai_validations (id, idea_id, market_analysis, similar_products, feasibility_score, recommendation, confidence_score) VALUES (?, ?, ?, ?, ?, ?, ?)',
-          [validation.id, validation.idea_id, validation.market_analysis, validation.similar_products, validation.feasibility_score, validation.recommendation, validation.confidence_score],
-          function(err) {
-            if (err) reject(err);
-            else resolve();
-          }
-        );
-      });
+      await dbRun(
+        'INSERT OR IGNORE INTO ai_validations (id, idea_id, market_analysis, similar_products, feasibility_score, recommendation, confidence_score) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        [validation.id, validation.idea_id, validation.market_analysis, validation.similar_products, validation.feasibility_score, validation.recommendation, validation.confidence_score]
+      );
     }
     
     console.log('✅ Demo data seeded successfully!');
@@ -222,7 +196,7 @@ async function seedDemoData() {
     console.log('Email: demo@innov8.com | Password: demo123');
     console.log('Email: alice@innov8.com | Password: demo123');
     console.log('Email: bob@innov8.com | Password: demo123');
-    console.log('\n🚀 Start the server with: node server.js');
+    console.log('\n🚀 Start the server with: npm start');
     console.log('🌐 Access the app at: http://localhost:3000');
     
   } catch (error) {
