@@ -125,6 +125,14 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Read the version from package.json
+const { version } = require('./package.json');
+
+// Create a new endpoint to serve the version
+app.get('/api/version', (req, res) => {
+  res.json({ version: version });
+});
+
 // User registration
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -394,18 +402,22 @@ app.get('*', (req, res) => {
 });
 
 async function startServer() {
-  try {
-    await initializeDatabase();
-    app.listen(PORT, '0.0.0.0', () => {
-      console.log(`🚀 Innov8 server running on port ${PORT}`);
-      console.log(`📱 Access the app at: http://localhost:${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error);
-    process.exit(1);
-  }
+  app.listen(PORT, '0.0.0.0', () => {
+    console.log(`🚀 Innov8 server running on port ${PORT}`);
+    console.log(`📱 Access the app at: http://localhost:${PORT}`);
+  });
 }
 
-startServer();
+// Only start the server if this file is run directly (e.g., `node server.js`)
+if (require.main === module) {
+  initializeDatabase()
+    .then(() => {
+      startServer();
+    })
+    .catch(err => {
+      console.error("Failed to initialize and start server:", err);
+      process.exit(1);
+    });
+}
 
-module.exports = app;
+module.exports = { app, initializeDatabase };
