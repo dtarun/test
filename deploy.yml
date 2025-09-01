@@ -1,0 +1,32 @@
+# /Users/td/CPP/innov8-project/deploy.yml
+
+- name: Deploy Innov8 Application
+  hosts: gcp_servers  # Target the group defined in your inventory.ini
+  become: no          # We don't need root privileges for this.
+
+  tasks:
+    - name: Pull latest code from the master branch
+      # Uses the built-in git module, which is idempotent.
+      ansible.builtin.git:
+        repo: 'https://github.com/dtarun/test.git'
+        dest: "{{ project_dir }}"
+        version: master
+        force: yes
+
+    - name: Install/update production dependencies
+      # Uses the npm module to run 'npm install'.
+      community.general.npm:
+        path: "{{ project_dir }}"
+        production: yes # Skips devDependencies
+
+    - name: Create .env file from template
+      # Manages environment variables for the application.
+      ansible.builtin.template:
+        src: templates/env.j2
+        dest: "{{ project_dir }}/.env"
+
+    - name: Reload the application with PM2 for zero downtime
+      # Uses the pm2 module to gracefully reload the app.
+      community.general.pm2:
+        name: "{{ pm2_app_name }}"
+        state: reloaded
