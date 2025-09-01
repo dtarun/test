@@ -157,7 +157,11 @@ app.post('/api/auth/register', async (req, res) => {
       user: { id: userId, email, name }
     });
   } catch (error) {
-    res.status(500).json({ error: error.message.includes('UNIQUE constraint failed') ? 'Email already exists' : 'Server error' });
+    if (error.code === 'SQLITE_CONSTRAINT' && error.message.includes('UNIQUE constraint failed: users.email')) {
+      return res.status(409).json({ error: 'Email already exists' });
+    }
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Server error during registration' });
   }
 });
 
