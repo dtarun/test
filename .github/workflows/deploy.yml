@@ -30,6 +30,11 @@ jobs:
         # 'npm ci' is recommended for CI as it's faster and uses the package-lock.json
         run: npm ci
 
+      - name: Run tests
+        # This step runs the test suite. The deploy job will only start if tests pass.
+        # Your package.json should have a "test" script.
+        run: npm test
+
   # --- The CD (Continuous Deployment) Job ---
   deploy:
     name: Deploy to Production
