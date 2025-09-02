@@ -341,38 +341,51 @@ app.post('/api/ideas/:id/comments', authenticateToken, async (req, res) => {
   }
 });
 
-// AI Validation endpoint (mock for now)
-app.post('/api/ideas/:id/validate', authenticateToken, async (req, res) => {
+// AI Validation endpoint
+app.post('/api/ideas/:id/validate', authenticateToken, (req, res) => {
   const ideaId = req.params.id;
+  const aiValidationService = new (require('./enhanced-ai-validation.js'))();
 
-  try {
-    const idea = await dbGet('SELECT * FROM ideas WHERE id = ?', [ideaId]);
-    if (!idea) {
-      return res.status(404).json({ error: 'Idea not found' });
+  // Immediately respond to the user to avoid a long-running request
+  res.status(202).json({ message: 'AI validation has been queued and is running in the background.' });
+
+  // --- Run the long-running task in the background ---
+  // We don't use `await` here, so the function runs without blocking the response.
+  // Using an IIFE (Immediately Invoked Function Expression) to handle the async logic.
+  (async () => {
+    try {
+      await dbRun('UPDATE ideas SET status = ? WHERE id = ?', ['validating', ideaId]);
+
+      const idea = await dbGet('SELECT * FROM ideas WHERE id = ?', [ideaId]);
+      if (!idea) {
+        console.error(`[AI Validation BG] Idea with ID ${ideaId} not found after queuing.`);
+        return;
+      }
+
+      const validationResult = await aiValidationService.validateIdea(idea);
+      const validationId = uuidv4();
+
+      await dbRun('BEGIN TRANSACTION');
+      await dbRun(
+        'INSERT INTO ai_validations (id, idea_id, market_analysis, competitor_analysis, technical_feasibility, recommendations, desirability_score, validity_score, feasibility_score, overall_score, sources) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        [
+          validationId, ideaId, validationResult.market_analysis,
+          JSON.stringify(validationResult.competitor_analysis || []),
+          validationResult.technical_feasibility,
+          JSON.stringify(validationResult.recommendations || []),
+          validationResult.desirability_score, validationResult.validity_score,
+          validationResult.feasibility_score, validationResult.overall_score,
+          JSON.stringify(validationResult.sources || [])
+        ]
+      );
+      await dbRun('UPDATE ideas SET status = ? WHERE id = ?', ['validated', ideaId]);
+      await dbRun('COMMIT');
+      console.log(`[AI Validation BG] Successfully validated idea ${ideaId}.`);
+    } catch (error) {
+      console.error(`[AI Validation BG] Error during background validation for idea ${ideaId}:`, error);
+      await dbRun('UPDATE ideas SET status = ? WHERE id = ?', ['feedback', ideaId]).catch(e => console.error(`Failed to reset idea status for ${ideaId}`, e));
     }
-
-    // Mock AI validation
-    const mockValidation = {
-      id: uuidv4(),
-      idea_id: ideaId,
-      market_analysis: `Market analysis for "${idea.title}": This ${idea.category} concept shows potential.`,
-      similar_products: JSON.stringify(['Product A', 'Product B']),
-      feasibility_score: Math.floor(Math.random() * 40) + 60,
-      recommendation: `Recommendation for "${idea.title}": Focus on a niche market.`,
-      confidence_score: Math.random() * 0.3 + 0.7,
-      created_at: new Date().toISOString()
-    };
-
-    await dbRun('INSERT INTO ai_validations (id, idea_id, market_analysis, similar_products, feasibility_score, recommendation, confidence_score) VALUES (?, ?, ?, ?, ?, ?, ?)', [mockValidation.id, mockValidation.idea_id, mockValidation.market_analysis, mockValidation.similar_products, mockValidation.feasibility_score, mockValidation.recommendation, mockValidation.confidence_score]);
-    await dbRun('UPDATE ideas SET status = ? WHERE id = ?', ['validated', ideaId]);
-
-    res.json({
-      message: 'AI validation completed',
-      validation: { ...mockValidation, similar_products: JSON.parse(mockValidation.similar_products) }
-    });
-  } catch (error) {
-    res.status(500).json({ error: 'Validation failed' });
-  }
+  })();
 });
 
 // Like/unlike idea
